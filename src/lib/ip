@@ -1,4 +1,4 @@
-## /usr/lib/network/globals needs to be sourced before this file
+## /usr/lib/netctl/globals needs to be sourced before this file
 
 
 ## Interface a DHCP client
@@ -37,6 +37,8 @@ resolvconf_add() {
 # $IP6: type of IPv6 configuration
 ip_set() {
     local addr line route interface_sysctl=${Interface/.//}
+
+    network_ready
 
     if [[ -z $IP && -z $IP6 ]]; then
         report_error "Neither IP, nor IP6 was specified"

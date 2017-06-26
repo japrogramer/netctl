@@ -1,4 +1,4 @@
-export VERSION = 1.12
+export VERSION = 1.13
 
 PKG_CONFIG ?= pkg-config
 
@@ -15,11 +15,11 @@ install:
 	install -d $(DESTDIR)/etc/netctl/{examples,hooks,interfaces}
 	install -m644 docs/examples/* $(DESTDIR)/etc/netctl/examples/
 	# Libs
-	install -d $(DESTDIR)/usr/lib/network/{connections,dhcp}
-	install -m644 src/lib/{globals,ip,rfkill,wpa} $(DESTDIR)/usr/lib/network/
-	install -m644 src/lib/connections/* $(DESTDIR)/usr/lib/network/connections/
-	install -m644 src/lib/dhcp/* $(DESTDIR)/usr/lib/network/dhcp/
-	install -m755 src/lib/{auto.action,network} $(DESTDIR)/usr/lib/network/
+	install -d $(DESTDIR)/usr/lib/netctl/{connections,dhcp}
+	install -m644 src/lib/{globals,interface,ip,rfkill,wpa} $(DESTDIR)/usr/lib/netctl/
+	install -m644 src/lib/connections/* $(DESTDIR)/usr/lib/netctl/connections/
+	install -m644 src/lib/dhcp/* $(DESTDIR)/usr/lib/netctl/dhcp/
+	install -m755 src/lib/{auto.action,network} $(DESTDIR)/usr/lib/netctl/
 	# Scripts
 	install -d $(DESTDIR)/usr/bin
 	sed -e "s|@systemdsystemconfdir@|$(systemdsystemconfdir)|g" \
@@ -56,7 +56,7 @@ PKGBUILD: netctl-$(VERSION).tar.xz contrib/PKGBUILD.in
 	    $(lastword $^) > $@
 
 upload: netctl-$(VERSION).tar.xz
-	scp $< $<.sig nymeria.archlinux.org:/srv/ftp/other/packages/netctl
+	scp $< $<.sig sources.archlinux.org:/srv/ftp/other/packages/netctl
 
 clean:
 	$(MAKE) -C docs clean

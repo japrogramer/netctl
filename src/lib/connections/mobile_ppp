@@ -11,7 +11,10 @@ quote_word() {
 }
 
 mobile_ppp_up() {
-    local options_dir="$STATE_DIR/mobile_ppp.$Interface.$Profile"
+    local options_dir="$STATE_DIR/mobile_ppp-$Interface-$Profile"
+
+    network_ready
+
     mkdir -p "$options_dir"
     if [[ -z $ChatScript ]]; then
         ChatScript="$options_dir/modem.chat"
@@ -40,6 +43,8 @@ TIMEOUT 3
   3Gpref) printf "\^SYSCFG=2,2,3fffffff,0,1";;
   GPRSonly) printf "\^SYSCFG=13,1,3fffffff,0,0";;
   GPRSpref) printf "\^SYSCFG=2,1,3fffffff,0,0";;
+  SYSCFG=*) printf "\^$Mode";;
+  # If set to "None", this is a no-op
 esac)'
 ${AccessPointName:+'OK-AT-OK' 'AT+CGDCONT=1,$(quote_word "IP"),$(quote_word "$AccessPointName")'}
 'OK' 'ATDT${PhoneNumber:-*99#}'
@@ -80,7 +85,7 @@ EOF
 
 mobile_ppp_down() {
     local options_dir pidfile pid
-    options_dir="$STATE_DIR/mobile_ppp.$Interface.$Profile"
+    options_dir="$STATE_DIR/mobile_ppp-$Interface-$Profile"
     pidfile="/var/run/ppp-$Profile.pid"
 
     if [[ -r $pidfile ]]; then

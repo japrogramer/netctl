@@ -1,7 +1,7 @@
 NETCTL_VERSION="notpackaged"
 PROFILE_DIR="/etc/netctl"
-SUBR_DIR="/usr/lib/network"
-STATE_DIR="/run/network"
+SUBR_DIR="/usr/lib/netctl"
+STATE_DIR="/run/netctl"
 STATE_FILE="${NETCTL_STATE_FILE:-/var/lib/netctl/netctl.state}"
 
 
@@ -45,7 +45,7 @@ in_array() {
 }
 
 ## Check if a variable denotes a positive truth value
-# $1: the variable to check, use is_yes ${VAR:-yes} to set a default
+# $1: the variable to check, use is_yes "${VAR:-yes}" to set a default
 is_yes() {
     case ${1,,} in
       yes|true|on|1)
@@ -105,16 +105,15 @@ timeout_wait() {
 
 ## List all acceptable profiles names (assume they don't contain newlines)
 list_profiles() {
-    # JP: follow aliases with -L, also skip profiles that end with '.conf' (so
-    #     profile.conf can be the wpa.conf file for profile)
-    find -L "$PROFILE_DIR/" -maxdepth 1 -type f -not -name '.*' -not -name '*~' -not -name '*.action' -not -name '*.conf' -not -name '*.service' -printf "%f\n"
+    # Follow aliases with -L, skip forbidden/reserved names
+    find -L "$PROFILE_DIR/" -maxdepth 1 -type f -not -name '.*' -not -name '*~' -not -name $'*\n*' -not -name '*.action' -not -name '*.conf' -not -name '*.service' -printf "%f\n"
 }
 
-## Sources all hooks, a profile and any interface hook
+## Sources all hooks and a profile (but no interface configuration)
 # $1: profile name
 load_profile() {
     local hook
-    if [[ ! -r "$PROFILE_DIR/$1" ]]; then
+    if [[ -z $1 || ! -r "$PROFILE_DIR/$1" ]]; then
         exit_error "Profile '$1' does not exist or is not readable"
     fi
     while read -r hook; do
@@ -127,10 +126,22 @@ load_profile() {
     if [[ ! -r "${Connection:+$SUBR_DIR/connections/$Connection}" ]]; then
         exit_error "Profile '$1' does not specify a valid connection"
     fi
-    if [[ -x "$PROFILE_DIR/interfaces/$Interface" ]]; then
-        source "$PROFILE_DIR/interfaces/$Interface"
-    fi
     source "$SUBR_DIR/connections/$Connection"
+}
+
+## Wrapper around systemctl converting profile names to unit names
+# $1: systemctl command
+# $2...: profile names
+sd_call() {
+    local command=$1
+    shift
+    systemctl $command $(systemd-escape --template=netctl@.service "$@")
+}
+
+## Retrieves the status string from the unit for a profile
+# $1: profile name
+sd_status_text() {
+    sd_call status "$1" | sed -n 's/^ *Status: "\(.*\)"$/\1/p'
 }
 
 

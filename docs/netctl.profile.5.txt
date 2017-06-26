@@ -85,6 +85,10 @@ GENERAL OPTIONS
     to be a list of profiles that this profile requires. The meaning is
     the same as 'After' in *systemd.unit*(5).
 
+'WaitOnline='::
+    Set to `++yes++' to consider the profile activated only when it is
+    online.
+
 'ExecUpPost='::
     A command that is executed after a connection is established. If the
     specified command returns anything other than 0 (success), *netctl*
@@ -320,6 +324,10 @@ is understood for connections of the `bond' type:
     The bonding policy. See the kernel documentation on bonding for
     details.
 
+'LinkOptions='::
+    Additional options to be passed to *ip link*. Run
+    *ip link add type bond help* to see the available options.
+
 
 OPTIONS FOR `bridge' CONNECTIONS
 --------------------------------
@@ -330,6 +338,10 @@ connections of the `bridge' type:
 'SkipForwardingDelay='::
     Skip \(R)STP and immediately activate all bridge members. This can
     be useful when DHCP is used on the bridge.
+
+'LinkOptions='::
+    Additional options to be passed to *ip link*. Run
+    *ip link add type bridge help* to see the available options.
 
 
 OPTIONS FOR `dummy' CONNECTIONS
@@ -424,9 +436,10 @@ type:
 
 'Mode='::
     This option is used to specify the connection mode. Can be one of
-    `3Gpref', `3Gonly', `GPRSpref', `GPRSonly', `None'. This generates
-    AT commands specific to certain Huawei modems; all other devices
-    should use `None'.
+    `3Gpref', `3Gonly', `GPRSpref', `GPRSonly', `None', or a custom
+    +AT^SYSCFG=...+ line specified as `++SYSCFG=...++{empty}'.
+    This generates +AT+ commands specific to certain Huawei modems; all
+    other devices should leave this option unset, or set it to `None'.
 
 'Init='::
     An initialization string sent to the modem before dialing. This
